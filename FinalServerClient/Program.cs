@@ -26,9 +26,9 @@ namespace FinalServerClient
 
             listener.Start();
 
-            
 
 
+            Console.WriteLine("skibidi");
 
 
         }
