@@ -16,9 +16,15 @@ namespace FinalServerClient
         public void Connect()
         {
             int port = 16000;
-            string IP = "192.168.0.23";
+            string hostname = "FRANKLIN-LAPTOP";
 
-            using TcpClient client = new TcpClient(IP, port);
+            using TcpClient client = new TcpClient(hostname, port);
+
+            string msg = "hello";
+            byte[] msgInBytes = Encoding.UTF8.GetBytes(msg);
+
+            NetworkStream clientStream = client.GetStream();
+            clientStream.Write(msgInBytes, 0, msgInBytes.Length);
         }
     }  
 }

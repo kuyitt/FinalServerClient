@@ -1,7 +1,9 @@
 ﻿
+using System.ComponentModel;
 using System.Dynamic;
 using System.Net;
 using System.Net.Sockets;
+using System.Text;
 
 namespace FinalServerClient
 {
@@ -14,9 +16,10 @@ namespace FinalServerClient
             int port = 16000;
             //int subnet = GetLocalInfo(IP);
 
-            //Console.WriteLine(Needed(IP, port).ToString()); 
+            Console.WriteLine(hostName + " " + IP); 
 
             var server = new Server(IP,port);
+
         }
         //public static int GetLocalInfo(string IP)
         //{
@@ -59,15 +62,27 @@ namespace FinalServerClient
 
             listener.Start();
 
+            using TcpClient client = listener.AcceptTcpClient();
 
+            NetworkStream clientStream = client.GetStream();
 
-            Console.WriteLine("skibidi");
+            byte[] buffer = new byte[bufferSize];
+            string msg = Encoding.UTF8.GetString(buffer);
 
 
         }
-        public void Initiate()
+        private static bool _isDisconnected(TcpClient client)
         {
-
+            try
+            {
+                Socket s = client.Client;
+                return s.Poll(10 * 1000, SelectMode.SelectRead) && (s.Available == 0);
+            }
+            catch (SocketException se)
+            {
+                // We got a socket error, assume it's disconnected
+                return true;
+            }
         }
     }
 }
