@@ -55,20 +55,20 @@ namespace FinalServerClient
         public Server(string IP,int port) 
         {
             IPAddress listenerIP = IPAddress.Parse(IP);
-            
-            int bufferSize = 256;
-
             TcpListener listener = new TcpListener(listenerIP,port);
-
             listener.Start();
 
             using TcpClient client = listener.AcceptTcpClient();
-
             NetworkStream clientStream = client.GetStream();
 
+            int bufferSize = 256;
             byte[] buffer = new byte[bufferSize];
-            string msg = Encoding.UTF8.GetString(buffer);
+            int dataLength;
 
+            while ((dataLength = clientStream.Read(buffer, 0, bufferSize)) != 0)
+            { 
+                string msg = Encoding.UTF8.GetString(buffer);
+            }
 
         }
         private static bool _isDisconnected(TcpClient client)
@@ -83,6 +83,18 @@ namespace FinalServerClient
                 // We got a socket error, assume it's disconnected
                 return true;
             }
+        }
+        private void _newConnection()
+        {
+
+        }
+        private void _newMessage()
+        {
+
+        }
+        private void _disconnect()
+        {
+
         }
     }
 }
