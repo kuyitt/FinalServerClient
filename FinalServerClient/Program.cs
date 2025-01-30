@@ -16,9 +16,9 @@ namespace FinalServerClient
             int port = 16000;
             //int subnet = GetLocalInfo(IP);
 
-            Console.WriteLine(hostName + " " + IP); 
+            Console.WriteLine(hostName + " " + IP);
 
-            var server = new Server(IP,port);
+            var server = new Server(IP, port);
 
         }
         //public static int GetLocalInfo(string IP)
@@ -52,24 +52,63 @@ namespace FinalServerClient
     }
     public class Server
     {
-        public Server(string IP,int port) 
+
+        private List<TcpClient> _clients = new List<TcpClient>();
+
+        private Queue<String> _msgQueue = new Queue<String>();
+
+        public Server(string IP, int port)
         {
             IPAddress listenerIP = IPAddress.Parse(IP);
-            TcpListener listener = new TcpListener(listenerIP,port);
+            TcpListener listener = new TcpListener(listenerIP, port);
             listener.Start();
 
-            using TcpClient client = listener.AcceptTcpClient();
-            NetworkStream clientStream = client.GetStream();
+            //using TcpClient client = listener.AcceptTcpClient();
+            //NetworkStream clientStream = client.GetStream();
 
-            int bufferSize = 256;
-            byte[] buffer = new byte[bufferSize];
-            int dataLength;
+            //int bufferSize = 256;
+            //byte[] buffer = new byte[bufferSize];
+            //int dataLength;
 
-            while ((dataLength = clientStream.Read(buffer, 0, bufferSize)) != 0)
-            { 
-                string msg = Encoding.UTF8.GetString(buffer);
+            //while ((dataLength = clientStream.Read(buffer, 0, bufferSize)) != 0)
+            //{ 
+            //    string msg = Encoding.UTF8.GetString(buffer);
+            //}
+
+        }
+
+        private void _newConnection(TcpListener listener)
+        {
+            TcpClient newClient = listener.AcceptTcpClient();
+            _clients.Add(newClient);
+
+        }
+        private void _newMessage()
+        {
+            foreach (TcpClient messenger in _clients) 
+            {
+            
             }
 
+
+
+
+
+        }
+        private void _checkForDisconnect()
+        {
+            foreach (TcpClient client in _clients)
+            {
+                if (_isDisconnected(client))
+                {
+                    _clients.Remove(client);
+                }
+            }
+        }
+        private void _clearClient(TcpClient client)
+        {
+            client.GetStream().Close();
+            client.Close();
         }
         private static bool _isDisconnected(TcpClient client)
         {
@@ -84,15 +123,7 @@ namespace FinalServerClient
                 return true;
             }
         }
-        private void _newConnection()
-        {
-
-        }
-        private void _newMessage()
-        {
-
-        }
-        private void _disconnect()
+        private static void _sendMessages()
         {
 
         }
