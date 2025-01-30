@@ -67,11 +67,11 @@ namespace FinalServerClient
 
             while (true)
             {
-                Console.WriteLine("scanning");
-                _newConnection(listener);
+                if (listener.Pending()) { _newConnection(listener); }
                 _newMessage();
                 _sendMessages();
-                   
+
+                Thread.Sleep(1000);                   
             }
 
             //using TcpClient client = listener.AcceptTcpClient();
@@ -94,11 +94,9 @@ namespace FinalServerClient
             _clients.Add(newClient);
 
             Console.WriteLine("client added");
-            newClient.Close();
         }
         private void _newMessage()
         {
-            Console.WriteLine("Recieving message");
             foreach (TcpClient messenger in _clients) 
             {
                 int msgLength = messenger.Available;
@@ -145,15 +143,11 @@ namespace FinalServerClient
         }
         private void _sendMessages()
         {
-            Console.WriteLine("Sending messages");
             foreach (string message in _msgQueue)
             {
                 Console.WriteLine(message);
             }
-
-
-
-
+            _msgQueue.Clear();
         }
     }
 }
