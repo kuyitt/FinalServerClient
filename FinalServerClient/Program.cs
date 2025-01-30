@@ -18,7 +18,8 @@ namespace FinalServerClient
 
             Console.WriteLine(hostName + " " + IP);
 
-            var server = new Server(IP, port);
+            Server server = new Server();
+            server._startServer(IP,port);
 
         }
         //public static int GetLocalInfo(string IP)
@@ -56,12 +57,21 @@ namespace FinalServerClient
         private List<TcpClient> _clients = new List<TcpClient>();
 
         private Queue<String> _msgQueue = new Queue<String>();
+        public Server() { }
 
-        public Server(string IP, int port)
+        public void _startServer(string IP, int port)
         {
             IPAddress listenerIP = IPAddress.Parse(IP);
             TcpListener listener = new TcpListener(listenerIP, port);
             listener.Start();
+
+            while (true)
+            {
+                _newConnection(listener);
+                _newMessage();
+                _sendMessages();
+                   
+            }
 
             //using TcpClient client = listener.AcceptTcpClient();
             //NetworkStream clientStream = client.GetStream();
@@ -82,18 +92,25 @@ namespace FinalServerClient
             TcpClient newClient = listener.AcceptTcpClient();
             _clients.Add(newClient);
 
+            Console.WriteLine("client added");
         }
         private void _newMessage()
         {
             foreach (TcpClient messenger in _clients) 
             {
-            
+                int msgLength = messenger.Available;
+
+                if (msgLength > 0) 
+                {
+                    byte[] msgBytes = new byte[msgLength];
+                    string msg = string.Empty;
+
+                    messenger.GetStream().Read(msgBytes, 0, msgBytes.Length);
+                    msg = Encoding.UTF8.GetString(msgBytes);
+
+                    _msgQueue.Enqueue(msg);
+                }
             }
-
-
-
-
-
         }
         private void _checkForDisconnect()
         {
@@ -123,8 +140,15 @@ namespace FinalServerClient
                 return true;
             }
         }
-        private static void _sendMessages()
+        private void _sendMessages()
         {
+            foreach (string message in _msgQueue)
+            {
+                Console.WriteLine(message);
+            }
+
+
+
 
         }
     }
