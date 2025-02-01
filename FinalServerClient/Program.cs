@@ -55,7 +55,7 @@ namespace FinalServerClient
     {
 
         private List<TcpClient> _clients = new List<TcpClient>();
-
+        private Dictionary<TcpClient,string> _names = new Dictionary<TcpClient,string>();
         private Queue<String> _msgQueue = new Queue<String>();
         public Server() { }
 
@@ -70,6 +70,7 @@ namespace FinalServerClient
                 if (listener.Pending()) { _newConnection(listener); }
                 _newMessage();
                 _sendMessages();
+                _checkForDisconnect();
 
                 Thread.Sleep(1000);                   
             }
@@ -92,8 +93,14 @@ namespace FinalServerClient
         {
             TcpClient newClient = listener.AcceptTcpClient();
             _clients.Add(newClient);
+            NetworkStream nameStream = newClient.GetStream();
 
-            Console.WriteLine("client added");
+            byte[] nameBytes = new byte[1024];
+            nameStream.Read(nameBytes, 0, nameBytes.Length);
+            string name = Encoding.UTF8.GetString(nameBytes);
+
+            _names.Add(newClient,name);
+            Console.WriteLine("client {0} added", name);
         }
         private void _newMessage()
         {
@@ -109,7 +116,8 @@ namespace FinalServerClient
                     messenger.GetStream().Read(msgBytes, 0, msgBytes.Length);
                     msg = Encoding.UTF8.GetString(msgBytes);
 
-                    _msgQueue.Enqueue(msg);
+                    string compiledMessage = String.Format("{0}: {1}",_names[messenger], msg) ;
+                    _msgQueue.Enqueue(compiledMessage);
                 }
             }
         }
@@ -119,7 +127,10 @@ namespace FinalServerClient
             {
                 if (_isDisconnected(client))
                 {
+                    Console.WriteLine("client {0} disconnected", _names[client]);
+                    _names.Remove(client);
                     _clients.Remove(client);
+                    _clearClient(client);
                 }
             }
         }
