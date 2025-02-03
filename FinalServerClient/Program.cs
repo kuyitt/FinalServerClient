@@ -57,6 +57,7 @@ namespace FinalServerClient
         private List<TcpClient> _clients = new List<TcpClient>();
         private Dictionary<TcpClient,string> _names = new Dictionary<TcpClient,string>();
         private Queue<String> _msgQueue = new Queue<String>();
+        int bufferSize = 1024;
         public Server() { }
 
         public void _startServer(string IP, int port)
@@ -95,7 +96,7 @@ namespace FinalServerClient
             _clients.Add(newClient);
             NetworkStream nameStream = newClient.GetStream();
 
-            byte[] nameBytes = new byte[1024];
+            byte[] nameBytes = new byte[bufferSize];
             nameStream.Read(nameBytes, 0, nameBytes.Length);
             string name = Encoding.UTF8.GetString(nameBytes);
 
@@ -148,7 +149,6 @@ namespace FinalServerClient
             }
             catch (SocketException se)
             {
-                // We got a socket error, assume it's disconnected
                 return true;
             }
         }
@@ -157,6 +157,13 @@ namespace FinalServerClient
             foreach (string message in _msgQueue)
             {
                 Console.WriteLine(message);
+                foreach (TcpClient client in _clients)
+                {
+                    byte[] msgBytes = new byte[bufferSize];
+                    msgBytes = Encoding.UTF8.GetBytes(message);
+                    client.GetStream().Write(msgBytes, 0, message.Length);
+                    Console.WriteLine("Sent");
+                }
             }
             _msgQueue.Clear();
         }
