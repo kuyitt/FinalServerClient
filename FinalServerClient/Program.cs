@@ -101,7 +101,7 @@ namespace FinalServerClient
             string name = Encoding.UTF8.GetString(nameBytes);
 
             _names.Add(newClient,name);
-            Console.WriteLine("client {0} added", name);
+            _msgQueue.Enqueue(String.Format("client {0} added", name));
         }
         private void _newMessage()
         {
@@ -124,11 +124,11 @@ namespace FinalServerClient
         }
         private void _checkForDisconnect()
         {
-            foreach (TcpClient client in _clients)
+            foreach (TcpClient client in _clients.ToArray())
             {
                 if (_isDisconnected(client))
                 {
-                    Console.WriteLine("client {0} disconnected", _names[client]);
+                    _msgQueue.Enqueue(String.Format("client {0} disconnected", _names[client]));
                     _names.Remove(client);
                     _clients.Remove(client);
                     _clearClient(client);
@@ -161,6 +161,7 @@ namespace FinalServerClient
                 {
                     byte[] msgBytes = new byte[bufferSize];
                     msgBytes = Encoding.UTF8.GetBytes(message);
+                    Console.WriteLine(Encoding.UTF8.GetString(msgBytes));
                     client.GetStream().Write(msgBytes, 0, message.Length);
                     Console.WriteLine("Sent");
                 }
